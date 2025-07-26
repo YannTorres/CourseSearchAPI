@@ -7,16 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\Login\" />
-    <Folder Include="UseCases\User\" />
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\CourseSearch.Communication\CourseSearch.Communication.csproj" />
+    <ProjectReference Include="..\CourseSearch.Exception\CourseSearch.Exception.csproj" />
     <ProjectReference Include="..\CourseSearch.Infrastructure\CourseSearch.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UseCases\Course\GetById\" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CourseSearch.Domain.Repositories;
+using CourseSearch.Domain.Repositories.Course;
+using CourseSearch.Domain.Repositories.User;
+using CourseSearch.Domain.Security.Cryptography;
+using CourseSearch.Domain.Security.Tokens;
+using CourseSearch.Domain.Services.EdxCourses;
+using CourseSearch.Domain.Services.EdxCourses.HttpClient;
+using CourseSearch.Domain.Services.LoggedUser;
+using CourseSearch.Infrastructure.DataAcess;
+using CourseSearch.Infrastructure.DataAcess.Repositories;
+using CourseSearch.Infrastructure.Security.Cryptography;
+using CourseSearch.Infrastructure.Security.Tokens;
+using CourseSearch.Infrastructure.Services.EdxCourses;
+using CourseSearch.Infrastructure.Services.EdxCourses.HttpClient;
+using CourseSearch.Infrastructure.Services.LoggedUser;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CourseSearch.Infrastructure;
@@ -7,6 +23,49 @@ public static class DependencyInjectionExtension
 
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register infrastructure services here
+        services.AddScoped<IPasswordEncripter, PasswordEncripter>();
+        services.AddScoped<ILoggedUser, LoggedUser>();
+        services.AddHttpClient<IEdxApiClient, EdxApiClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://courses.edx.org");
+        });
+
+        services.AddScoped<IEdxCourseEtlService, EdxCourseEtlService>();
+
+        AddRepositories(services);
+        AddToken(services, configuration);
+
+        AddDbcContext(services, configuration);
+    }
+
+    private static void AddRepositories(IServiceCollection services)
+    {
+        // User
+        services.AddScoped<IUserWriteOnlyRepository, UserRepository>();
+        services.AddScoped<IUserReadOnlyRepository, UserRepository>();
+        services.AddScoped<IUserUpdateOnlyRepository, UserRepository>();
+
+        // Course
+        services.AddScoped<ICourseReadOnlyRepository, CourseRepository>();
+        services.AddScoped<ICourseUpdateOnlyRepository, CourseRepository>();
+        services.AddScoped<ICourseWriteOnlyRepository, CourseRepository>();
+
+        // Unit of Work
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+    }
+
+    private static void AddDbcContext(IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services.AddDbContext<CourseSearchDbContext>(config => config.UseSqlServer(connectionString));
+    }
+
+    private static void AddToken(IServiceCollection services, IConfiguration configuration)
+    {
+        var expirationTimeMinutes = configuration.GetValue<uint>("Settings:Jwt:ExpiresMinutes");
+        var signingKey = configuration.GetValue<string>("Settings:Jwt:SigningKey");
+
+        services.AddScoped<IAcessTokenGenerator>(config => new JwtTokenGenerator(signingKey!, expirationTimeMinutes));
     }
 }
