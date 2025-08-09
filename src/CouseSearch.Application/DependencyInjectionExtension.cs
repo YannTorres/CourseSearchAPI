@@ -1,5 +1,7 @@
 ﻿using CourseSearch.Application.UseCases.Course.GetAll;
+using CourseSearch.Application.UseCases.Course.GetById;
 using CourseSearch.Application.UseCases.Login;
+using CourseSearch.Application.UseCases.Roadmap.Create;
 using CourseSearch.Application.UseCases.Users.ChangePassword;
 using CourseSearch.Application.UseCases.Users.Delete;
 using CourseSearch.Application.UseCases.Users.GetProfile;
@@ -26,7 +28,11 @@ public static class DependencyInjectionExtension
         services.AddScoped<ILoginUseCase, LoginUseCase>();
 
         // Courses UseCases
-
         services.AddScoped<IGetAllCoursesUseCase, GetAllCoursesUseCase>();
+        services.AddScoped<IGetByIdCourseUseCase, GetByIdCourseUseCase>();
+
+        // Roadmap UseCases
+        services.AddScoped<ICreateRoadmapUseCase, CreateRoadmapUseCase>();
+
     }
 }

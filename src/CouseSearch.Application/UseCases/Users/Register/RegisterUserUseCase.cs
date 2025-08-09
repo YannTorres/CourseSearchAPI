@@ -35,7 +35,7 @@ public class RegisterUserUseCase : IRegisterUserUseCase
 
         var user = new User()
         {
-            FirstName = request.FistName,
+            FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
         };
@@ -46,7 +46,12 @@ public class RegisterUserUseCase : IRegisterUserUseCase
 
         return new ResponseRegisterUserJson()
         {
-            FistName = user.FirstName,
+            User = new Communication.Extension.UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                Email = user.Email
+            },
             Token = _tokenGenerator.Generate(user)
         };
     }
@@ -59,7 +64,7 @@ public class RegisterUserUseCase : IRegisterUserUseCase
 
         if (existEmail)
         {
-            result.Errors.Add(new ValidationFailure(string.Empty, "Email already exists."));
+            result.Errors.Add(new ValidationFailure(string.Empty, "Este Email já foi cadastrado."));
         }
 
         if (!result.IsValid)

@@ -1,4 +1,5 @@
-﻿using CourseSearch.Communication.Requests.Users;
+﻿using CourseSearch.Communication.Extension;
+using CourseSearch.Communication.Requests.Users;
 using CourseSearch.Communication.Responses.Users;
 using CourseSearch.Domain.Repositories.User;
 using CourseSearch.Domain.Security.Cryptography;
@@ -20,8 +21,10 @@ public class LoginUseCase : ILoginUseCase
         _repository = repository;
         _encripter = encripter;
     }
-    public async Task<ResponseRegisterUserJson> Execute(RequestLoginJson request)
+    public async Task<ResponseLoginUserJson> Execute(RequestLoginJson request)
     {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
         var user = await _repository.GetUserByEmail(request.Email);
 
         if (user == null)
@@ -36,9 +39,14 @@ public class LoginUseCase : ILoginUseCase
             throw new UnauthorizedException();
         }
 
-        return new ResponseRegisterUserJson
+        return new ResponseLoginUserJson
         {
-            FistName = user.FirstName,
+            User = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                Email = user.Email
+            },
             Token = _acessTokenGenerator.Generate(user)
         };
     }

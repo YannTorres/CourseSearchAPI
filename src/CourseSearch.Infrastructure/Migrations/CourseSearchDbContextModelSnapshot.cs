@@ -34,6 +34,9 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Property<string>("Author")
                         .HasColumnType("nvarchar(max)");
 
+                    b.PrimitiveCollection<string>("CourseLevels")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CourseUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -45,15 +48,33 @@ namespace CourseSearch.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DurationsInMinutes")
+                        .HasColumnType("int");
+
                     b.Property<string>("ExternalId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Locale")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PlatformId")
                         .HasColumnType("int");
 
+                    b.Property<float?>("Popularity")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("RatingId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("Units")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -62,6 +83,8 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PlatformId");
+
+                    b.HasIndex("RatingId");
 
                     b.ToTable("Courses");
                 });
@@ -98,6 +121,28 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Platforms");
+                });
+
+            modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<float>("Average")
+                        .HasColumnType("real");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rating");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Roadmap", b =>
@@ -261,7 +306,13 @@ namespace CourseSearch.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CourseSearch.Domain.Entities.Rating", "Rating")
+                        .WithMany("Courses")
+                        .HasForeignKey("RatingId");
+
                     b.Navigation("Platform");
+
+                    b.Navigation("Rating");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Roadmap", b =>
@@ -344,6 +395,11 @@ namespace CourseSearch.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Platform", b =>
+                {
+                    b.Navigation("Courses");
+                });
+
+            modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
                 {
                     b.Navigation("Courses");
                 });

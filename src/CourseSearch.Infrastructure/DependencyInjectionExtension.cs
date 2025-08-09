@@ -3,15 +3,19 @@ using CourseSearch.Domain.Repositories.Course;
 using CourseSearch.Domain.Repositories.User;
 using CourseSearch.Domain.Security.Cryptography;
 using CourseSearch.Domain.Security.Tokens;
-using CourseSearch.Domain.Services.EdxCourses;
-using CourseSearch.Domain.Services.EdxCourses.HttpClient;
+using CourseSearch.Domain.Services.CourseProvider;
+using CourseSearch.Domain.Services.CourseProvider.HttpClient;
+using CourseSearch.Domain.Services.IAModelService;
 using CourseSearch.Domain.Services.LoggedUser;
 using CourseSearch.Infrastructure.DataAcess;
 using CourseSearch.Infrastructure.DataAcess.Repositories;
 using CourseSearch.Infrastructure.Security.Cryptography;
 using CourseSearch.Infrastructure.Security.Tokens;
+using CourseSearch.Infrastructure.Services.CoursesProvider;
+using CourseSearch.Infrastructure.Services.CoursesProvider.HttpClient;
 using CourseSearch.Infrastructure.Services.EdxCourses;
 using CourseSearch.Infrastructure.Services.EdxCourses.HttpClient;
+using CourseSearch.Infrastructure.Services.IAModelService;
 using CourseSearch.Infrastructure.Services.LoggedUser;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,13 +29,14 @@ public static class DependencyInjectionExtension
     {
         services.AddScoped<IPasswordEncripter, PasswordEncripter>();
         services.AddScoped<ILoggedUser, LoggedUser>();
-        services.AddHttpClient<IEdxApiClient, EdxApiClient>(c =>
-        {
-            c.BaseAddress = new Uri("https://courses.edx.org");
-        });
 
-        services.AddScoped<IEdxCourseEtlService, EdxCourseEtlService>();
+        services.AddScoped<ICourseProvider, EdxCourseProvider>();
+        services.AddScoped<ICourseProvider, MicrosoftLearnCourseProvider>();
+        services.AddScoped<ICourseProvider, AluraCourseProvider>();
 
+        services.AddScoped<IAIModelService, GeminiModelService>();
+
+        AddHttpClient(services);
         AddRepositories(services);
         AddToken(services, configuration);
 
@@ -67,5 +72,25 @@ public static class DependencyInjectionExtension
         var signingKey = configuration.GetValue<string>("Settings:Jwt:SigningKey");
 
         services.AddScoped<IAcessTokenGenerator>(config => new JwtTokenGenerator(signingKey!, expirationTimeMinutes));
+    }
+
+    private static void AddHttpClient(IServiceCollection services)
+    {
+        services.AddHttpClient<IEdxApiClient, EdxApiClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://courses.edx.org");
+        });
+
+        services.AddHttpClient<IMicrosoftLearnApiClient, MicrosoftLearnApiClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://learn.microsoft.com");
+        });
+
+        services.AddHttpClient<IAluraCourseApiClient, AluraCourseApiClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://www.alura.com.br");
+        });
+
+        services.AddHttpClient<GeminiModelService>();
     }
 }

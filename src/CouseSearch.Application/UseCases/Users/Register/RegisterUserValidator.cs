@@ -6,7 +6,7 @@ public class RegisterUserValidator : AbstractValidator<RequestRegisterUserJson>
 {
     public RegisterUserValidator()
     {
-        RuleFor(user => user.FistName).NotEmpty().WithMessage("O nome não pode estar vazio.");
+        RuleFor(user => user.FirstName).NotEmpty().WithMessage("O nome não pode estar vazio.");
         RuleFor(user => user.LastName).NotEmpty().WithMessage("O Sobrenome não pode estar vazio.");
         RuleFor(user => user.Email)
             .NotEmpty()

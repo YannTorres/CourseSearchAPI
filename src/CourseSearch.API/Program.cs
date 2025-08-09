@@ -4,6 +4,7 @@ using CourseSearch.Application;
 using CourseSearch.Domain.Security.Tokens;
 using CourseSearch.Infrastructure;
 using CourseSearch.Infrastructure.Migrations;
+using CourseSearch.Infrastructure.Services.CoursesProvider.Settings;
 using CourseSearch.Infrastructure.Services.Worker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -70,6 +71,9 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
 
+builder.Services.Configure<FilterSettings>(builder.Configuration.GetSection("FilterSettings"));
+
+builder.Services.AddHostedService<CourseSyncWorker>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -96,8 +100,6 @@ builder.Services.AddAuthentication(config =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey!))
     };
 });
-
-builder.Services.AddHostedService<CourseSyncWorker>();
 
 var app = builder.Build();
 

@@ -1,6 +1,6 @@
 ﻿using CourseSearch.Domain.Dtos.EdxCourses;
 
-namespace CourseSearch.Domain.Services.EdxCourses.HttpClient;
+namespace CourseSearch.Domain.Services.CourseProvider.HttpClient;
 public interface IEdxApiClient
 {
     Task<EdxCourseResponseDto?> GetCoursesByPageAsync(int page, int pageSize);

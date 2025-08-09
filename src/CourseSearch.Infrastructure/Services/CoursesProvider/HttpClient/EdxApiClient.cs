@@ -1,9 +1,9 @@
 ﻿using CourseSearch.Domain.Dtos.EdxCourses;
-using CourseSearch.Domain.Services.EdxCourses.HttpClient;
+using CourseSearch.Domain.Services.CourseProvider.HttpClient;
 using System.Net.Http.Json;
 
 namespace CourseSearch.Infrastructure.Services.EdxCourses.HttpClient;
-public class EdxApiClient : IEdxApiClient
+internal class EdxApiClient : IEdxApiClient
 {
     private readonly System.Net.Http.HttpClient _httpClient;
 

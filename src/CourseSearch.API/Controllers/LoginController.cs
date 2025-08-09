@@ -11,7 +11,7 @@ namespace CourseSearch.API.Controllers;
 public class LoginController : ControllerBase
 {
     [HttpPost]
-    [ProducesResponseType(typeof(ResponseRegisterUserJson), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseLoginUserJson), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login(
         [FromBody] RequestLoginJson request,

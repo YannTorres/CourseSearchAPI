@@ -13,12 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CourseSearch.Communication\CourseSearch.Communication.csproj" />
+    <ProjectReference Include="..\CourseSearch.Domain\CourseSearch.Domain.csproj" />
     <ProjectReference Include="..\CourseSearch.Exception\CourseSearch.Exception.csproj" />
     <ProjectReference Include="..\CourseSearch.Infrastructure\CourseSearch.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UseCases\Course\GetById\" />
   </ItemGroup>
 
 </Project>
