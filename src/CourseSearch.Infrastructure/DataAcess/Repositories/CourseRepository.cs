@@ -51,6 +51,9 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
     public async Task<Course?> GetByExternalIdAsync(string externalId)
     {
         return await _dbcontext.Courses
+            .Include(c => c.Tags)
+            .Include(c => c.Platform)
+            .Include(c => c.Rating)
             .FirstOrDefaultAsync(c => c.ExternalId == externalId);
     }
 
@@ -84,13 +87,11 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
             return [];
         }
 
-        // Usamos um dicionário para armazenar os cursos encontrados e suas pontuações,
-        // evitando duplicatas e facilitando a atribuição de pontos.
         var courseScores = new Dictionary<Guid, (Course Course, int Score)>();
 
-        // --- PASSO 1: Busca por Tags (Alta Prioridade, +10 pontos) ---
+        // Busca por Tags (Alta Prioridade, +10 pontos)
         var coursesByTag = await _dbcontext.Courses
-            .Include(c => c.Tags) // Inclui as tags para podermos filtrar por elas
+            .Include(c => c.Tags)
             .Where(c => c.Tags.Any(t => topics.Contains(t.Name)))
             .ToListAsync();
 
@@ -99,7 +100,6 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
             // Calcula quantas tags o curso tem em comum com a lista de tópicos
             int matchingTagsCount = course.Tags.Count(t => topics.Contains(t.Name));
 
-            // Adiciona ao dicionário com uma pontuação alta por cada tag correspondente
             if (!courseScores.ContainsKey(course.Id))
             {
                 courseScores[course.Id] = (course, 0);
@@ -107,10 +107,9 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
             courseScores[course.Id] = (course, courseScores[course.Id].Score + (10 * matchingTagsCount));
         }
 
-        // --- PASSO 2: Busca por Título (Média Prioridade, +3 pontos) ---
-        // Construímos uma query dinâmica para buscar por múltiplos tópicos no título
+        // Busca por Título (Média Prioridade, +3 pontos)
         var queryBuilder = _dbcontext.Courses.AsQueryable();
-        var predicate = PredicateBuilder.New<Course>(false); // Começa com 'false' para poder usar OR
+        var predicate = PredicateBuilder.New<Course>(false);
 
         foreach (var topic in topics)
         {
@@ -121,18 +120,16 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
 
         foreach (var course in coursesByTitle)
         {
-            // Se o curso ainda não foi adicionado pela busca de tags, adicione-o com uma pontuação menor.
             if (!courseScores.ContainsKey(course.Id))
             {
                 courseScores[course.Id] = (course, 3);
             }
-            else // Se já existe, apenas adiciona os pontos extras por ter o título correspondente
+            else
             {
                 courseScores[course.Id] = (course, courseScores[course.Id].Score + 3);
             }
         }
 
-        // --- PASSO 3: Ordenar por pontuação e retornar a lista de cursos ---
         var relevantCourses = courseScores.Values
             .OrderByDescending(x => x.Score)
             .Select(x => x.Course)

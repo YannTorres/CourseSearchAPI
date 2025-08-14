@@ -1,3 +1,4 @@
+using CourseSearch.API.Converters;
 using CourseSearch.API.Filters;
 using CourseSearch.API.Token;
 using CourseSearch.Application;
@@ -29,7 +30,8 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new StringConverter()));
 
 builder.Services.AddOpenApi();
 

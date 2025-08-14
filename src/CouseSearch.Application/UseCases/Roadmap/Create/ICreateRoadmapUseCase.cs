@@ -1,7 +1,8 @@
 ﻿using CourseSearch.Communication.Requests.Roadmap;
+using CourseSearch.Communication.Responses.Roadmap;
 
 namespace CourseSearch.Application.UseCases.Roadmap.Create;
 public interface ICreateRoadmapUseCase
 {
-    Task<Domain.Entities.Roadmap?> Execute(RequestGenerateRoadpmapJson request);
+    Task<ResponseGenerateRoadmapJson> Execute(RequestGenerateRoadpmapJson request);
 }

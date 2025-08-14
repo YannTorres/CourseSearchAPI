@@ -15,9 +15,10 @@ public class CourseController : ControllerBase
     public async Task<IActionResult> GetAllCourses(
         [FromServices] IGetAllCoursesUseCase useCase,
         [FromQuery] int pageNumber,
-        [FromQuery] int pageSize)
+        [FromQuery] int pageSize,
+        [FromQuery] string? search = null)
     {
-        var response = await useCase.Execute(pageNumber, pageSize);
+        var response = await useCase.Execute(pageNumber, pageSize, search);
 
         return Ok(response);
     }

@@ -11,8 +11,6 @@ public class AluraCourseApiClient : IAluraCourseApiClient
     {
         _httpClient = httpClient;
     }
-
-    // Método para buscar a lista de todos os slugs de cursos
     public async Task<IEnumerable<AluraCourseResponseDTO>> GetCourseListAsync()
     {
         try
@@ -22,12 +20,9 @@ public class AluraCourseApiClient : IAluraCourseApiClient
         }
         catch (Exception)
         {
-            // Logar o erro
             return Enumerable.Empty<AluraCourseResponseDTO>();
         }
     }
-
-    // Método para buscar os detalhes de um curso específico pelo slug
     public async Task<AluraCourseDetailsDto?> GetCourseDetailsAsync(string slug)
     {
         try
@@ -36,7 +31,6 @@ public class AluraCourseApiClient : IAluraCourseApiClient
         }
         catch (Exception)
         {
-            // Logar o erro, o curso pode não existir mais
             return null;
         }
     }

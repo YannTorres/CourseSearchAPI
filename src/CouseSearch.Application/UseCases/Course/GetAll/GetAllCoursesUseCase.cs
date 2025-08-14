@@ -1,8 +1,7 @@
-﻿
-using CourseSearch.Communication.Responses.Courses;
+﻿using CourseSearch.Communication.Responses.Courses;
 using CourseSearch.Domain.Repositories.Course;
+using CourseSearch.Domain.Extensions;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CourseSearch.Application.UseCases.Course.GetAll;
 public class GetAllCoursesUseCase : IGetAllCoursesUseCase
@@ -12,10 +11,19 @@ public class GetAllCoursesUseCase : IGetAllCoursesUseCase
     {
         _courseRepository = courseRepository;
     }
-    public async Task<ResponseCoursesJson> Execute(int pageNumber, int pageSize)
+    public async Task<ResponseCoursesJson> Execute(int pageNumber, int pageSize, string? search)
     {
         var result = _courseRepository.GetAll();
 
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchTerm = search.Trim().ToLower();
+            result = result.Where(a =>
+                (a.Title != null && a.Title.ToLower().Contains(searchTerm)) ||
+                (a.Description != null && a.Description.ToLower().Contains(searchTerm))
+            );
+        }
+        
         var totalCount = await result.CountAsync();
 
         var courses = await result
@@ -29,7 +37,11 @@ public class GetAllCoursesUseCase : IGetAllCoursesUseCase
             Id = c.Id,
             Title = c.Title,
             Description = c.Description,
-            Platform = c.Platform.Name
+            Platform = c.Platform.Name,
+            RatingAverage = c.Rating?.Average.ToString() ?? "Não Definido" ,
+            RatingCount = c.Rating?.Count.ToString() ?? "Não Definido",
+            CourseLevels = c.CourseLevels?.Select(cl => cl.CourseLevelToString()).ToList() ?? ["Nível Não Especificado"],
+            Tags = c.Tags.Select(t => t.Name).ToList()
         }).ToList();
 
         return new ResponseCoursesJson
@@ -41,3 +53,4 @@ public class GetAllCoursesUseCase : IGetAllCoursesUseCase
         };
     }
 }
+ 

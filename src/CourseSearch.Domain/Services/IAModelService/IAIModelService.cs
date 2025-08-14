@@ -6,5 +6,5 @@ namespace CourseSearch.Domain.Services.IAModelService;
 public interface IAIModelService
 {
     Task<List<string>> ExtractTopicsFromObjectiveAsync(RequestGenerateRoadpmapJson request);
-    Task<AISuggestionDto?> SelectAndOrderCoursesAsync(RequestGenerateRoadpmapJson request, IEnumerable<Course> candidateCourses);
+    Task<List<AISuggestionContentDto>?> SelectAndOrderCoursesAsync(RequestGenerateRoadpmapJson request, IEnumerable<Course> candidateCourses);
 }

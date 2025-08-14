@@ -1,5 +1,7 @@
 ﻿using CourseSearch.Application.UseCases.Roadmap.Create;
 using CourseSearch.Communication.Requests.Roadmap;
+using CourseSearch.Communication.Responses.Error;
+using CourseSearch.Communication.Responses.Roadmap;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +12,9 @@ namespace CourseSearch.API.Controllers;
 public class RoadmapController : ControllerBase
 {
     [HttpPost("generate-with-ai")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ResponseGenerateRoadmapJson), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GenerateRoadmapWithAI(
         [FromBody] RequestGenerateRoadpmapJson request,
         [FromServices] ICreateRoadmapUseCase useCase)

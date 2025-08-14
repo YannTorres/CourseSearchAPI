@@ -44,7 +44,7 @@ public class AluraCourseProvider : ICourseProvider
         {
             ExternalId = dto.Id.ToString(),
             Title = dto.Nome,
-            Description = dto.Metadescription.IsNullOrEmpty() ? "" : dto.Metadescription!,
+            Description = dto.Metadescription == null ? "" : dto.Metadescription!,
             CourseUrl = $"https://www.alura.com.br/curso-online-{slug}",
             Author = "Alura",
             DurationsInMinutes = dto.Duration > 0 ? dto.Duration : null,
@@ -56,13 +56,11 @@ public class AluraCourseProvider : ICourseProvider
         var tags = new List<Tag>();
         if (dto.Categorias != null)
         {
-            tags.AddRange(dto.Categorias.Select(c => new Tag { Name = c.Nome, Courses }));
-            tags.AddRange(dto.Categorias.Select(c => new Tag { Name = c.Slug }));
+            tags.AddRange(dto.Categorias.Select(c => new Tag { Name = c.Nome }));
         }
         if (dto.SubCategorias != null)
         {
             tags.AddRange(dto.SubCategorias.Select(sc => new Tag { Name = sc.Nome }));
-            tags.AddRange(dto.SubCategorias.Select(sc => new Tag { Name = sc.Slug }));
         }
         course.Tags = tags;
         course.Rating = new Rating

@@ -8,6 +8,7 @@ public class AISuggestionDto
 
 public class AISuggestionContentDto
 {
+    public string CourseId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int Order { get; set; }

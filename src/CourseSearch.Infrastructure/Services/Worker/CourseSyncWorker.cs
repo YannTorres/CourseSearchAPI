@@ -35,14 +35,13 @@ public class CourseSyncWorker : BackgroundService
         {
             _logger.LogInformation("Worker: Iniciando ciclo de sincronização...");
 
-
             using (var scope = _serviceProvider.CreateScope())
             {
                 var providers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICourseProvider>>();
                 var courseSyncService = scope.ServiceProvider.GetRequiredService<ICourseWriteOnlyRepository>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                IEnumerable<ICourseProvider> provideres = providers.Skip(2);
+                IEnumerable<ICourseProvider> provideres = providers.Skip(1);
 
                 foreach (var provider in provideres)
                 {

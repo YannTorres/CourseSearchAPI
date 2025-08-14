@@ -1,5 +1,6 @@
 ﻿using CourseSearch.Domain.Repositories;
 using CourseSearch.Domain.Repositories.Course;
+using CourseSearch.Domain.Repositories.Roadmap;
 using CourseSearch.Domain.Repositories.User;
 using CourseSearch.Domain.Security.Cryptography;
 using CourseSearch.Domain.Security.Tokens;
@@ -54,6 +55,10 @@ public static class DependencyInjectionExtension
         services.AddScoped<ICourseReadOnlyRepository, CourseRepository>();
         services.AddScoped<ICourseUpdateOnlyRepository, CourseRepository>();
         services.AddScoped<ICourseWriteOnlyRepository, CourseRepository>();
+
+        // Roadmap
+        services.AddScoped<IRoadmapReadOnlyRepository, RoadmapRepository>();
+        services.AddScoped<IRoadmapWriteOnlyRepository, RoadmapRepository>();
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();

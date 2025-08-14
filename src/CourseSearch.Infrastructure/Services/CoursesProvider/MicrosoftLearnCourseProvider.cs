@@ -34,16 +34,6 @@ public class MicrosoftLearnCourseProvider : ICourseProvider
     private Course MapMicrosoftDtoToDomain(MicrosoftCourseDto dto)
     {
 
-        Rating? courseRating = null;
-        if (dto.Rating != null)
-        {
-            courseRating = new Rating
-            {
-                Count = dto.Rating.Count,
-                Average = dto.Rating.Average
-            };
-        }
-
         ICollection<Tag> tags = [];
         if (dto.Tags != null)
         {
@@ -67,7 +57,7 @@ public class MicrosoftLearnCourseProvider : ICourseProvider
             }
         }
 
-        return new Course
+        var course = new Course
         {
             Id = Guid.NewGuid(),
             ExternalId = dto.Id,
@@ -83,9 +73,20 @@ public class MicrosoftLearnCourseProvider : ICourseProvider
             Popularity = dto.Popularity,
             UpdatedAt = dto.LastDateModified,
             PlatformId = PlataformId,
-            Rating = courseRating,
             Tags = tags
         };
+
+        if (dto.Rating != null)
+        {
+            course.Rating = new Rating
+            {
+                Count = dto.Rating.Count,
+                Average = dto.Rating.Average,
+                CourseId = course.Id
+            };
+        }
+
+        return course;
     }
     private List<CourseLevel> MapLevelsFromDto(IEnumerable<string>? levelStringsFromApi)
     {

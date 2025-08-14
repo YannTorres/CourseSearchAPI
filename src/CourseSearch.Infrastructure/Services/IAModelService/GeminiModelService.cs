@@ -13,7 +13,6 @@ public class GeminiModelService : IAIModelService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly string _apiKey;
-    // Usaremos o Gemini 1.5 Flash, que é rápido e mais barato, ideal para estas tarefas.
     private const string GeminiModel = "gemini-2.5-flash-lite";
     public GeminiModelService(HttpClient httpClient, IConfiguration configuration)
     {
@@ -29,7 +28,7 @@ public class GeminiModelService : IAIModelService
             Um usuário com nível de experiência '{request.ExperienceLevel}' tem o seguinte objetivo: '{request.Objective}' na área de '{request.AreaOfInterest}'.
            Analise este objetivo e retorne uma lista dos tópicos técnicos, habilidades e tecnologias essenciais que ele precisa aprender para alcançar seu objetivo.
            Sua resposta DEVE SER APENAS um JSON array de strings em INGLÊS, sem nenhuma explicação, evite usar palavras compostas seja direto na resposta, ex: dotnet, ccharp, sql, e etc.
-           Exemplo de resposta esperada: ['topico-1', 'topico-2', 'topico-3'] (Importante dividir as tags com '-')
+           Exemplo de resposta esperada: ['topico-1', 'topico-2', 'topico-3'] (Importante dividir as tags com '-') (Faça no Mínimo 100 tags relacionadas)
         """;
 
         var responseText = await GenerateContentAsync(prompt);
@@ -46,14 +45,13 @@ public class GeminiModelService : IAIModelService
         }
         catch (JsonException)
         {
-            // A IA pode retornar um formato inválido. Retorne uma lista vazia para não quebrar o sistema.
+            // Retornar uma lista vazia para não quebrar o sistema.
             return [];
         }
     }
 
-    public async Task<AISuggestionDto?> SelectAndOrderCoursesAsync(RequestGenerateRoadpmapJson request, IEnumerable<Course> candidateCourses)
+    public async Task<List<AISuggestionContentDto>?> SelectAndOrderCoursesAsync(RequestGenerateRoadpmapJson request, IEnumerable<Course> candidateCourses)
     {
-               // Serializa apenas os dados relevantes dos cursos para economizar tokens
         var simplifiedCourses = candidateCourses.Select(c => new 
         {
             id = c.Id,
@@ -75,11 +73,10 @@ public class GeminiModelService : IAIModelService
             2.  Ordene os cursos selecionados em uma sequência lógica de aprendizado.
 
             Sua resposta DEVE SER APENAS um objeto JSON válido, sem nenhuma outra formatação, texto ou explicação, contento estas propriedades:
-            "roadmap" ´simbulo de chaves abrindo´
-              "title": "Título do curso que está disponível no meu banco de dados.",
-              "description": "Descrição do curso que está disponível no meu banco de dados. se estiver vazio crie uma descrição curta",
-              "order": 1,
-            ´simbulo de chaves fechando´
+              "CourseId": "ID do curso que está disponível no meu banco de dados.",
+              "Title": "Título do curso que está disponível no meu banco de dados.",
+              "Description": "Descrição do curso que está disponível no meu banco de dados. se estiver vazio crie uma descrição curta",
+              "Order": número inteiro indicando a ordem do curso na trilha de aprendizado, começando em 1 para o primeiro curso.
         """;
 
         var responseText = await GenerateContentAsync(prompt);
@@ -91,7 +88,7 @@ public class GeminiModelService : IAIModelService
         try
         {
             var cleanJson = responseText.Trim().Replace("```json", "").Replace("```", "");
-            return JsonSerializer.Deserialize<AISuggestionDto>(cleanJson);
+            return JsonSerializer.Deserialize<List<AISuggestionContentDto>?>(cleanJson);
         }
         catch (JsonException)
         {
@@ -110,8 +107,6 @@ public class GeminiModelService : IAIModelService
 
         var jsonBody = JsonSerializer.Serialize(requestBody);
         var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-        //var response = await _httpClient.PostAsync(apiUrl, content);
 
         var response = await _httpClient.PostAsJsonAsync($"{apiUrl}", requestBody);
 

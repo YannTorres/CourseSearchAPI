@@ -46,8 +46,6 @@ public class UsersController : ControllerBase
         [FromServices] IUpdateUserProfileUseCase useCase,
         [FromBody] RequestUpdateUserJson request)
     {
-        // TODO: Update Email
-
         await useCase.Execute(request);
 
         return NoContent();

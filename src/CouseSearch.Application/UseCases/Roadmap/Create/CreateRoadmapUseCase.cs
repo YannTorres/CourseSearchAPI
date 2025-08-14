@@ -1,8 +1,11 @@
 ﻿using CourseSearch.Application.UseCases.Users.Register;
 using CourseSearch.Communication.Requests.Roadmap;
 using CourseSearch.Communication.Requests.Users;
+using CourseSearch.Communication.Responses.Roadmap;
 using CourseSearch.Domain.Entities;
+using CourseSearch.Domain.Repositories;
 using CourseSearch.Domain.Repositories.Course;
+using CourseSearch.Domain.Repositories.Roadmap;
 using CourseSearch.Domain.Services.IAModelService;
 using CourseSearch.Domain.Services.LoggedUser;
 using CourseSearch.Exception.ExceptionBase;
@@ -13,76 +16,68 @@ public class CreateRoadmapUseCase : ICreateRoadmapUseCase
     private readonly ILoggedUser _loggedUser;
     private readonly IAIModelService _aiModelService;
     private readonly ICourseReadOnlyRepository _courseRepository;
+    private readonly IRoadmapWriteOnlyRepository _roadmapRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreateRoadmapUseCase(ILoggedUser loggedUser,
         IAIModelService aiModelService,
-        ICourseReadOnlyRepository courseRepository
+        ICourseReadOnlyRepository courseRepository,
+        IRoadmapWriteOnlyRepository roadmapRepository,
+        IUnitOfWork unitOfWork
         )
     {
         _loggedUser = loggedUser;
         _aiModelService = aiModelService;
         _courseRepository = courseRepository;
+        _roadmapRepository = roadmapRepository;
+        _unitOfWork = unitOfWork;
     }
-    public async Task<Domain.Entities.Roadmap?> Execute(RequestGenerateRoadpmapJson request)
+    public async Task<ResponseGenerateRoadmapJson> Execute(RequestGenerateRoadpmapJson request)
     {
         var loggedUser = await _loggedUser.Get();
 
         Validate(request);
 
-        // --- PASSO 1: IA extrai os tópicos ---
+        // IA extrai os tópicos 
         var topics = await _aiModelService.ExtractTopicsFromObjectiveAsync(request);
-        if (topics == null || topics.Count == 0) return null;
+        if (topics == null || topics.Count == 0) throw new NotFoundException("Não foi possivel analizar essa área de interesse, tente outra.");
 
-        // --- PASSO 2: Seu sistema busca os cursos candidatos ---
+        // Sistema busca os cursos candidatos 
         var candidateCourses = await _courseRepository.FindCoursesByTopics(topics);
-        if (candidateCourses == null || !candidateCourses.Any()) return null;
+        if (candidateCourses == null || candidateCourses.Count < 5) throw new NotFoundException("Não foram encontrados cursos dessa área de interesse em nosso catálogo.");
 
-        // --- PASSO 3: IA seleciona, ordena e enriquece os dados ---
+        // IA seleciona, ordena e enriquece os dados
         var aiSuggestion = await _aiModelService.SelectAndOrderCoursesAsync(request, candidateCourses);
-        if (aiSuggestion == null) return null;
+        if (aiSuggestion == null) throw new NotFoundException("Não foi possível gerar o roadmap, tente novamente.");
 
-        // --- Persistência no Banco de Dados ---
-        // Cria a entidade principal do Roadmap
-
-        var newRoadmap = new Domain.Entities.Roadmap();
-
-        foreach (var step in aiSuggestion.Roadmap)
+        var newRoadmap = new Domain.Entities.Roadmap
         {
-            var itemRoadmap = new Domain.Entities.Roadmap
+            Title = request.Objective,
+            Description = "",
+            CreatedAt = DateTime.UtcNow,
+            Courses = new List<RoadmapCourse>(),
+            Creator = loggedUser,
+        };
+
+        foreach (var step in aiSuggestion)
+        {
+            newRoadmap.Courses.Add(new RoadmapCourse
             {
-                Title = step.Title,
-                Description = step.Description,
-                CreatorUserId = loggedUser.Id,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-
-
-            if (string.IsNullOrWhiteSpace(step.Title))
-            {
-                throw new ErrorOnValidationException(new List<string> { "Invalid course data in AI suggestion." });
-            }
+                CourseId = Guid.Parse(step.CourseId),   
+                RoadmapId = newRoadmap.Id,
+                StepOrder = step.Order,
+                CourseDescription = step.Description,
+                CourseName = step.Title
+            });
         }
 
-        // Adiciona os cursos ao roadmap com a ordem e justificativa
-        //foreach (var step in aiSuggestion.Steps)
-        //{
-        //    var course = candidateCourses.FirstOrDefault(c => c.Id == step.CourseId);
-        //    if (course != null)
-        //    {
-        //        newRoadmap.Courses.Add(new RoadmapCourse
-        //        {
-        //            Course = course,
-        //            StepOrder = step.Order,
-        //        });
-        //    }
-        //}
+        await _roadmapRepository.Add(newRoadmap);
+        await _unitOfWork.Commit();
 
-        // Salva tudo no banco
-        //await _roadmapRepository.AddAsync(newRoadmap);
-        //await _roadmapRepository.SaveChangesAsync();
-
-        return newRoadmap;
+        return new ResponseGenerateRoadmapJson()
+        {
+            Title = newRoadmap.Title,
+        };
     }
 
     private static void Validate(RequestGenerateRoadpmapJson request)
