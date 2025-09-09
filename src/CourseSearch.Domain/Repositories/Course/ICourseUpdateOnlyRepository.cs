@@ -1,6 +1,10 @@
-﻿namespace CourseSearch.Domain.Repositories.Course;
+﻿using CourseSearch.Domain.Entities;
+
+namespace CourseSearch.Domain.Repositories.Course;
 public interface ICourseUpdateOnlyRepository
 {
-    Task<Entities.Course?> GetByExternalIdAsync(string ExternalCourseId);
     void Update(Entities.Course course);
+    Task<Entities.Course?> GetById(Guid id);
+    void UpdateRating(Rating course);
+    void UpdateUserRating(UserCourseRating courseRating);
 }

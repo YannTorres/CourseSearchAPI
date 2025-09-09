@@ -24,15 +24,15 @@ public class GetByIdCourseUseCase : IGetByIdCourseUseCase
             Id = course!.Id,
             Title = course!.Title,
             Description = course?.Description ?? "Não Informada",
-            Platform = course?.Platform.Name ?? "Não Informado",
+            Platform = course?.Author ?? "Autor não definido",
             CourseUrl = course?.CourseUrl ?? string.Empty,
             ImageUrl = course?.IconUrl ?? string.Empty,
             CourseLevels = course?.CourseLevels?.Select(cl => cl.CourseLevelToString()).ToList() ?? ["Nível Não Especificado"],
             DurationInMinutes = course?.DurationsInMinutes ?? 0,
             Tags = course?.Tags.Select(t => t.Name).ToList(),
             UpdatedAt = course!.UpdatedAt,
-            RatingAverage = course.Rating?.Average.ToString() ?? "Não Definido",
-            RatingCount = course.Rating?.Count.ToString() ?? "Não Definido",
+            RatingAverage = course?.Rating?.Average.ToString("F1") ?? "N/A",
+            RatingCount = (course?.Rating?.Count ?? 0).ToAvaliacoesString(),
         };
     }
 }

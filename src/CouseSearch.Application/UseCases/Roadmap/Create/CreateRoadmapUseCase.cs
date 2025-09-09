@@ -52,8 +52,9 @@ public class CreateRoadmapUseCase : ICreateRoadmapUseCase
 
         var newRoadmap = new Domain.Entities.Roadmap
         {
-            Title = request.Objective,
-            Description = "",
+            Title = request.Title,
+            Description = request.Description,
+            StepsCount = aiSuggestion.Count,
             CreatedAt = DateTime.UtcNow,
             Courses = new List<RoadmapCourse>(),
             Creator = loggedUser,
@@ -66,6 +67,7 @@ public class CreateRoadmapUseCase : ICreateRoadmapUseCase
                 CourseId = Guid.Parse(step.CourseId),   
                 RoadmapId = newRoadmap.Id,
                 StepOrder = step.Order,
+                IsCompleted = false,
                 CourseDescription = step.Description,
                 CourseName = step.Title
             });

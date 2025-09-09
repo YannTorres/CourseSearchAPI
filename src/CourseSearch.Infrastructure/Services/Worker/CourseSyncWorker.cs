@@ -1,6 +1,8 @@
-﻿using CourseSearch.Domain.Repositories;
+﻿using CourseSearch.Domain.Entities;
+using CourseSearch.Domain.Repositories;
 using CourseSearch.Domain.Repositories.Course;
 using CourseSearch.Domain.Services.CourseProvider;
+using CourseSearch.Domain.Services.IAModelService;
 using CourseSearch.Infrastructure.Services.CoursesProvider.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,9 +41,11 @@ public class CourseSyncWorker : BackgroundService
             {
                 var providers = scope.ServiceProvider.GetRequiredService<IEnumerable<ICourseProvider>>();
                 var courseSyncService = scope.ServiceProvider.GetRequiredService<ICourseWriteOnlyRepository>();
+                var readOnlyRepository = scope.ServiceProvider.GetRequiredService<ICourseReadOnlyRepository>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var aiModelService = scope.ServiceProvider.GetRequiredService<IAIModelService>();
 
-                IEnumerable<ICourseProvider> provideres = providers.Skip(1);
+                IEnumerable<ICourseProvider> provideres = providers.Skip(3);
 
                 foreach (var provider in provideres)
                 {
@@ -61,11 +65,22 @@ public class CourseSyncWorker : BackgroundService
 
                         if (shouldSync)
                         {
-                            await courseSyncService.AddOrUpdateCourse(course, provider.PlatformName);
+                            var existingCourse = await readOnlyRepository.GetByExternalIdAsync(course.ExternalId);
+
+                            if (existingCourse != null && existingCourse.Tags.Count == 0)
+                            {
+
+                                var generatedTags = await aiModelService.GenerateTagsForCourseAsync(course.Id, course.Title, course.Description);
+                                course.Tags = generatedTags;
+                            }
+
+                            await courseSyncService.AddOrUpdateCourse(course);
+
                             await unitOfWork.Commit();
                         }
                     }
                 }
+
             }
 
             _logger.LogInformation("Worker: Ciclo finalizado. Próxima execução em 24 horas.");

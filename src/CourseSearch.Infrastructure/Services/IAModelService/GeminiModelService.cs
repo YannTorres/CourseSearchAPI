@@ -14,6 +14,7 @@ public class GeminiModelService : IAIModelService
     private readonly IConfiguration _configuration;
     private readonly string _apiKey;
     private const string GeminiModel = "gemini-2.5-flash-lite";
+    private const string GeminiModelRoadmap = "gemini-2.5-flash";
     public GeminiModelService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
@@ -24,14 +25,15 @@ public class GeminiModelService : IAIModelService
     public async Task<List<string>> ExtractTopicsFromObjectiveAsync(RequestGenerateRoadpmapJson request)
     {
         var prompt = $"""
-            Você é um especialista em planejamento de carreiras de tecnologia.
-            Um usuário com nível de experiência '{request.ExperienceLevel}' tem o seguinte objetivo: '{request.Objective}' na área de '{request.AreaOfInterest}'.
+           Você é um especialista em planejamento de carreiras de tecnologia.
+           Um usuário com nível de experiência '{request.ExperienceLevel}' tem o seguinte objetivo: '{request.Objective}' e ele tem interesses nas seguintes técnologias '{request.PriorityTechs}'.
            Analise este objetivo e retorne uma lista dos tópicos técnicos, habilidades e tecnologias essenciais que ele precisa aprender para alcançar seu objetivo.
-           Sua resposta DEVE SER APENAS um JSON array de strings em INGLÊS, sem nenhuma explicação, evite usar palavras compostas seja direto na resposta, ex: dotnet, ccharp, sql, e etc.
-           Exemplo de resposta esperada: ['topico-1', 'topico-2', 'topico-3'] (Importante dividir as tags com '-') (Faça no Mínimo 100 tags relacionadas)
+           IMPORANTE: Foque em tópicos relacionados com as tecnologias que ele quer aprender.
+           Sua resposta DEVE SER APENAS um JSON array de strings em PORTUGUÊS DO BRASIL, sem nenhuma explicação, NÃO USE palavras compostas E seja direto na resposta, ex: dotnet, ccharp, sql, e etc.
+           Exemplo de resposta esperada: ["Topico 1", "Topico 2", "Topico 3"] (Importante começar com maiúscula e separar com espaços) (Faça apenas 10 tags relacionadas no MAXIMO, podendo ter menos)
         """;
 
-        var responseText = await GenerateContentAsync(prompt);
+        var responseText = await GenerateContentAsync(prompt, GeminiModelRoadmap);
 
         if (string.IsNullOrEmpty(responseText))
         {
@@ -40,12 +42,14 @@ public class GeminiModelService : IAIModelService
 
         try
         {
-            var cleanJson = responseText.Trim().Replace("```json", "").Replace("```", "");
+            var cleanJson = responseText;
+
+            if (cleanJson.Contains("```"))
+                cleanJson = responseText.Trim().Replace("```json", "").Replace("```", "");
             return JsonSerializer.Deserialize<List<string>>(cleanJson) ?? [];
         }
         catch (JsonException)
         {
-            // Retornar uma lista vazia para não quebrar o sistema.
             return [];
         }
     }
@@ -63,14 +67,16 @@ public class GeminiModelService : IAIModelService
 
         var prompt = $"""
             Você é um especialista em criar trilhas de aprendizado (roadmaps) personalizadas.
-            Um usuário com nível '{request.ExperienceLevel}' quer alcançar o objetivo: '{request.Objective}'.
+            Um usuário com nível '{request.ExperienceLevel}' quer alcançar o objetivo: '{request.Objective}'
+            e tem vontade de aprender as seguintes tecnologias '{request.PriorityTechs}'.
             Eu tenho os seguintes cursos disponíveis no meu banco de dados:
             {coursesJson}
 
             Sua tarefa é agir como um filtro e sequenciador inteligente.
             1.  Selecione APENAS da lista fornecida os cursos mais relevantes para o objetivo do usuário.
-            3.  A Lista deve ter no máximo 20 cursos.
-            2.  Ordene os cursos selecionados em uma sequência lógica de aprendizado.
+            2.  A Lista deve ter no máximo 20 cursos.
+            3.  Ordene os cursos selecionados em uma sequência lógica de aprendizado.
+            4.  Selecione os cursos que melhor de alinham com as tecnologias de interesse do usuário, se não encontrado nenhum selecione os que o mercado de trabalho mais procura.
 
             Sua resposta DEVE SER APENAS um objeto JSON válido, sem nenhuma outra formatação, texto ou explicação, contento estas propriedades:
               "CourseId": "ID do curso que está disponível no meu banco de dados.",
@@ -78,8 +84,8 @@ public class GeminiModelService : IAIModelService
               "Description": "Descrição do curso que está disponível no meu banco de dados. se estiver vazio crie uma descrição curta",
               "Order": número inteiro indicando a ordem do curso na trilha de aprendizado, começando em 1 para o primeiro curso.
         """;
-
-        var responseText = await GenerateContentAsync(prompt);
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        var responseText = await GenerateContentAsync(prompt, GeminiModelRoadmap);
         if (string.IsNullOrEmpty(responseText))
         {
             return null;
@@ -96,9 +102,55 @@ public class GeminiModelService : IAIModelService
         }
     }
 
-    private async Task<string?> GenerateContentAsync(string prompt)
+    public async Task<List<Tag>> GenerateTagsForCourseAsync(Guid courseId, string courseTitle, string courseDescription)
     {
-        var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiModel}:generateContent?key={_apiKey}";
+        var prompt = $@"
+        Analise o título e a descrição de um curso online e gere de 5 a 10 tags relevantes.
+        As tags devem cobrir tecnologias, conceitos, nível de dificuldade (iniciante, intermediário, avançado) e área de atuação.
+        Retorne APENAS as tags em uma única linha, separadas por vírgula.
+
+        Exemplo de entrada:
+        Título: 'Curso de C# e .NET: Criando uma API REST do zero'
+        Descrição: 'Aprenda a construir APIs robustas com C#, ASP.NET Core. Abordaremos controllers, models, Entity Framework e boas práticas de arquitetura.'
+        Exemplo de saída:
+        C#, .NET, API, REST, ASP.NET Core, Entity Framework, Backend, Intermediário
+
+        ---
+
+        Entrada Real:
+        Título: '{courseTitle}'
+        Descrição: '{courseDescription}'
+        Saída:
+        ";
+
+        try
+        {
+
+            var responseText = await GenerateContentAsync(prompt, GeminiModel);
+            
+            if (!string.IsNullOrEmpty(responseText))
+            {
+                return responseText.Split(',')
+                                    .Select(tagName => tagName.Trim())
+                                    .Where(tagName => !string.IsNullOrEmpty(tagName))
+                                    .Select(tagName => new Tag
+                                    {
+                                        Name = tagName,
+                                        CourseId = courseId 
+                                    }).ToList();
+            }
+
+            return [];
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+    private async Task<string?> GenerateContentAsync(string prompt, string geminiModel)
+    {
+        var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{geminiModel}:generateContent?key={_apiKey}";
 
         var requestBody = new GeminiRequest(
             Contents: [new Content([new Part(prompt)])],
@@ -120,4 +172,5 @@ public class GeminiModelService : IAIModelService
 
         return geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
     }
+
 }

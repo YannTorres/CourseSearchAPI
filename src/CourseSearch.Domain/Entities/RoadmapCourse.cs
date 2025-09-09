@@ -9,6 +9,7 @@ public class RoadmapCourse
     public string CourseName { get; set; } = string.Empty;
     public string CourseDescription { get; set; } = string.Empty;
     public int StepOrder { get; set; }
+    public bool IsCompleted { get; set; }
     public virtual Roadmap Roadmap { get; set; } = null!;
     public virtual Course Course { get; set; } = null!;
 }

@@ -1,6 +1,6 @@
 ﻿using CourseSearch.Domain.Entities;
 using CourseSearch.Domain.Repositories.Roadmap;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace CourseSearch.Infrastructure.DataAcess.Repositories;
 internal class RoadmapRepository : IRoadmapReadOnlyRepository, IRoadmapWriteOnlyRepository
@@ -17,15 +17,20 @@ internal class RoadmapRepository : IRoadmapReadOnlyRepository, IRoadmapWriteOnly
         await _dbContext.Roadmaps.AddAsync(roadmap);
     }
 
-    public async Task<List<Roadmap>?> GetAll()
+    public async Task<List<Roadmap>?> GetAll(Domain.Entities.User user)
     {
         return await _dbContext.Roadmaps
-            .Include(r => r.Courses)
+            .Where(r => r.Creator.Id == user.Id)
             .ToListAsync();
     }
 
-    public Task<Roadmap?> GetById(Guid id)
+    public async Task<Roadmap?> GetById(Guid id, Domain.Entities.User user)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Roadmaps
+            .Include(r => r.Courses.OrderBy(rc => rc.StepOrder))
+                .ThenInclude(rc => rc.Course)
+                .ThenInclude(rc => rc.Rating)
+            .Include(r => r.Creator)
+            .FirstOrDefaultAsync(r => r.Id == id && r.Creator.Id == user.Id);
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseSearch.Infrastructure.Migrations
 {
     [DbContext(typeof(CourseSearchDbContext))]
-    [Migration("20250811232720_AjustsInRoadmapProperties")]
-    partial class AjustsInRoadmapProperties
+    [Migration("20250818184200_OnModelCreatingAjusts")]
+    partial class OnModelCreatingAjusts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,6 +124,23 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Platforms");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "edX"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Microsoft Learn"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Alura"
+                        });
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
@@ -145,7 +162,7 @@ namespace CourseSearch.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rating");
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Roadmap", b =>
@@ -163,12 +180,15 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CreatorUserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExperienceLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StepsCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -197,6 +217,9 @@ namespace CourseSearch.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("StepOrder")
                         .HasColumnType("int");
 
@@ -215,11 +238,16 @@ namespace CourseSearch.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
 
                     b.ToTable("Tags");
                 });
@@ -291,21 +319,6 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.ToTable("UserInteractions");
                 });
 
-            modelBuilder.Entity("CoursesTags", b =>
-                {
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CourseId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("CoursesTags", (string)null);
-                });
-
             modelBuilder.Entity("CourseSearch.Domain.Entities.Course", b =>
                 {
                     b.HasOne("CourseSearch.Domain.Entities.Platform", "Platform")
@@ -353,6 +366,17 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Navigation("Roadmap");
                 });
 
+            modelBuilder.Entity("CourseSearch.Domain.Entities.Tag", b =>
+                {
+                    b.HasOne("CourseSearch.Domain.Entities.Course", "Course")
+                        .WithMany("Tags")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("CourseSearch.Domain.Entities.UserInteraction", b =>
                 {
                     b.HasOne("CourseSearch.Domain.Entities.Course", "Course")
@@ -380,26 +404,13 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CoursesTags", b =>
-                {
-                    b.HasOne("CourseSearch.Domain.Entities.Course", null)
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CourseSearch.Domain.Entities.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("CourseSearch.Domain.Entities.Course", b =>
                 {
                     b.Navigation("Interactions");
 
                     b.Navigation("Roadmaps");
+
+                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Platform", b =>

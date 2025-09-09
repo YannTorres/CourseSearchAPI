@@ -73,7 +73,7 @@ public class MicrosoftLearnCourseProvider : ICourseProvider
             Popularity = dto.Popularity,
             UpdatedAt = dto.LastDateModified,
             PlatformId = PlataformId,
-            Tags = tags
+            //Tags = tags
         };
 
         if (dto.Rating != null)

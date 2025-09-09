@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,11 +16,6 @@
     <ProjectReference Include="..\CourseSearch.Domain\CourseSearch.Domain.csproj" />
     <ProjectReference Include="..\CourseSearch.Exception\CourseSearch.Exception.csproj" />
     <ProjectReference Include="..\CourseSearch.Infrastructure\CourseSearch.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UseCases\Roadmap\GetById\" />
-    <Folder Include="UseCases\Roadmap\GetAll\" />
   </ItemGroup>
 
 </Project>

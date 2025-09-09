@@ -4,6 +4,7 @@ using CourseSearch.Infrastructure.DataAcess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseSearch.Infrastructure.Migrations
 {
     [DbContext(typeof(CourseSearchDbContext))]
-    partial class CourseSearchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827223106_UpdateCouseProps")]
+    partial class UpdateCouseProps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,7 +64,7 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Property<string>("Locale")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PlatformId")
+                    b.Property<int>("PlatformId")
                         .HasColumnType("int");
 
                     b.Property<float?>("Popularity")
@@ -336,7 +339,9 @@ namespace CourseSearch.Infrastructure.Migrations
                 {
                     b.HasOne("CourseSearch.Domain.Entities.Platform", "Platform")
                         .WithMany("Courses")
-                        .HasForeignKey("PlatformId");
+                        .HasForeignKey("PlatformId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Platform");
                 });

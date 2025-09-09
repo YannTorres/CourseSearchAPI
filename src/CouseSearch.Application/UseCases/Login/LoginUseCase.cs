@@ -23,8 +23,6 @@ public class LoginUseCase : ILoginUseCase
     }
     public async Task<ResponseLoginUserJson> Execute(RequestLoginJson request)
     {
-        await Task.Delay(TimeSpan.FromSeconds(2));
-
         var user = await _repository.GetUserByEmail(request.Email);
 
         if (user == null)

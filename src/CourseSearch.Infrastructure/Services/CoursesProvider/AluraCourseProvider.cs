@@ -53,16 +53,6 @@ public class AluraCourseProvider : ICourseProvider
             PlatformId = PlataformId,
         };
 
-        var tags = new List<Tag>();
-        if (dto.Categorias != null)
-        {
-            tags.AddRange(dto.Categorias.Select(c => new Tag { Name = c.Nome }));
-        }
-        if (dto.SubCategorias != null)
-        {
-            tags.AddRange(dto.SubCategorias.Select(sc => new Tag { Name = sc.Nome }));
-        }
-        course.Tags = tags;
         course.Rating = new Rating
         {
             CourseId = course.Id,

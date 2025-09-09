@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CourseSearch.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AjustsInRoadmapProperties : Migration
+    public partial class FirstMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,7 +38,7 @@ namespace CourseSearch.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Rating",
+                name: "Ratings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -49,20 +49,7 @@ namespace CourseSearch.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Rating", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Tags",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.PrimaryKey("PK_Ratings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -114,9 +101,9 @@ namespace CourseSearch.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Courses_Rating_RatingId",
+                        name: "FK_Courses_Ratings_RatingId",
                         column: x => x.RatingId,
-                        principalTable: "Rating",
+                        principalTable: "Ratings",
                         principalColumn: "Id");
                 });
 
@@ -127,7 +114,8 @@ namespace CourseSearch.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StepsCount = table.Column<int>(type: "int", nullable: false),
+                    ExperienceLevel = table.Column<int>(type: "int", nullable: false),
                     CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -144,25 +132,21 @@ namespace CourseSearch.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CoursesTags",
+                name: "Tags",
                 columns: table => new
                 {
-                    CourseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TagId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CourseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CoursesTags", x => new { x.CourseId, x.TagId });
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CoursesTags_Courses_CourseId",
+                        name: "FK_Tags_Courses_CourseId",
                         column: x => x.CourseId,
                         principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CoursesTags_Tags_TagId",
-                        column: x => x.TagId,
-                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -210,7 +194,8 @@ namespace CourseSearch.Infrastructure.Migrations
                     CourseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CourseName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CourseDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StepOrder = table.Column<int>(type: "int", nullable: false)
+                    StepOrder = table.Column<int>(type: "int", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -240,11 +225,6 @@ namespace CourseSearch.Infrastructure.Migrations
                 column: "RatingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CoursesTags_TagId",
-                table: "CoursesTags",
-                column: "TagId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_RoadmapCourses_CourseId",
                 table: "RoadmapCourses",
                 column: "CourseId");
@@ -253,6 +233,11 @@ namespace CourseSearch.Infrastructure.Migrations
                 name: "IX_Roadmaps_CreatorId",
                 table: "Roadmaps",
                 column: "CreatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_CourseId",
+                table: "Tags",
+                column: "CourseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInteractions_CourseId",
@@ -274,16 +259,13 @@ namespace CourseSearch.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CoursesTags");
-
-            migrationBuilder.DropTable(
                 name: "RoadmapCourses");
 
             migrationBuilder.DropTable(
-                name: "UserInteractions");
+                name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "UserInteractions");
 
             migrationBuilder.DropTable(
                 name: "Roadmaps");
@@ -301,7 +283,7 @@ namespace CourseSearch.Infrastructure.Migrations
                 name: "Platforms");
 
             migrationBuilder.DropTable(
-                name: "Rating");
+                name: "Ratings");
         }
     }
 }

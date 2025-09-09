@@ -9,7 +9,9 @@ internal class CourseSearchDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Platform> Platforms { get; set; }
     public DbSet<Course> Courses { get; set; }
+    public DbSet<UserCourseRating> UserCourseRating { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<Rating> Ratings { get; set; }
     public DbSet<Roadmap> Roadmaps { get; set; }
     public DbSet<RoadmapCourse> RoadmapCourses { get; set; }
     public DbSet<InteractionType> InteractionTypes { get; set; }
@@ -21,23 +23,32 @@ internal class CourseSearchDbContext : DbContext
         modelBuilder.Entity<RoadmapCourse>()
             .HasKey(rc => new { rc.RoadmapId, rc.CourseId });
 
-        modelBuilder.Entity<Course>()
-            .HasMany(c => c.Tags) 
-            .WithMany(t => t.Courses)
-            .UsingEntity<Dictionary<string, object>>(
-                "CoursesTags", 
-                j => j
-                    .HasOne<Tag>()
-                    .WithMany()
-                    .HasForeignKey("TagId"), 
-                j => j
-                    .HasOne<Course>()
-                    .WithMany()
-                    .HasForeignKey("CourseId"), 
-                j =>
-                {
-                    j.ToTable("CoursesTags");
-                    j.HasKey("CourseId", "TagId");
-                });
+        modelBuilder.Entity<Platform>().HasData(
+            new Platform { Id = 1, Name = "edX" },
+            new Platform { Id = 2, Name = "Microsoft Learn" },
+            new Platform { Id = 3, Name = "Alura" }
+            );
+
+        modelBuilder.Entity<UserCourseRating>()
+            .HasKey(ucr => new { ucr.UserId, ucr.CourseId });
+
+        //modelBuilder.Entity<Course>()
+        //    .HasMany(c => c.Tags) 
+        //    .WithMany(t => t.Courses)
+        //    .UsingEntity<Dictionary<string, object>>(
+        //        "CoursesTags", 
+        //        j => j
+        //            .HasOne<Tag>()
+        //            .WithMany()
+        //            .HasForeignKey("TagId"), 
+        //        j => j
+        //            .HasOne<Course>()
+        //            .WithMany()
+        //            .HasForeignKey("CourseId"), 
+        //        j =>
+        //        {
+        //            j.ToTable("CoursesTags");
+        //            j.HasKey("CourseId", "TagId");
+        //        });
     }
 }

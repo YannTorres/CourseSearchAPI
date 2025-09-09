@@ -4,6 +4,7 @@ using CourseSearch.Infrastructure.DataAcess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,13 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseSearch.Infrastructure.Migrations
 {
     [DbContext(typeof(CourseSearchDbContext))]
-    partial class CourseSearchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250818182736_FirstMigration")]
+    partial class FirstMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -61,11 +64,14 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Property<string>("Locale")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PlatformId")
+                    b.Property<int>("PlatformId")
                         .HasColumnType("int");
 
                     b.Property<float?>("Popularity")
                         .HasColumnType("real");
+
+                    b.Property<int?>("RatingId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -80,6 +86,8 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PlatformId");
+
+                    b.HasIndex("RatingId");
 
                     b.ToTable("Courses");
                 });
@@ -116,23 +124,6 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Platforms");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "edX"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Microsoft Learn"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Alura"
-                        });
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
@@ -153,9 +144,6 @@ namespace CourseSearch.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId")
-                        .IsUnique();
 
                     b.ToTable("Ratings");
                 });
@@ -280,24 +268,6 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CourseSearch.Domain.Entities.UserCourseRating", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "CourseId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("UserCourseRating");
-                });
-
             modelBuilder.Entity("CourseSearch.Domain.Entities.UserInteraction", b =>
                 {
                     b.Property<long>("Id")
@@ -336,20 +306,17 @@ namespace CourseSearch.Infrastructure.Migrations
                 {
                     b.HasOne("CourseSearch.Domain.Entities.Platform", "Platform")
                         .WithMany("Courses")
-                        .HasForeignKey("PlatformId");
-
-                    b.Navigation("Platform");
-                });
-
-            modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
-                {
-                    b.HasOne("CourseSearch.Domain.Entities.Course", "Course")
-                        .WithOne("Rating")
-                        .HasForeignKey("CourseSearch.Domain.Entities.Rating", "CourseId")
+                        .HasForeignKey("PlatformId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.HasOne("CourseSearch.Domain.Entities.Rating", "Rating")
+                        .WithMany("Courses")
+                        .HasForeignKey("RatingId");
+
+                    b.Navigation("Platform");
+
+                    b.Navigation("Rating");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Roadmap", b =>
@@ -393,25 +360,6 @@ namespace CourseSearch.Infrastructure.Migrations
                     b.Navigation("Course");
                 });
 
-            modelBuilder.Entity("CourseSearch.Domain.Entities.UserCourseRating", b =>
-                {
-                    b.HasOne("CourseSearch.Domain.Entities.Course", "Course")
-                        .WithMany("UserRatings")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CourseSearch.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("CourseSearch.Domain.Entities.UserInteraction", b =>
                 {
                     b.HasOne("CourseSearch.Domain.Entities.Course", "Course")
@@ -443,16 +391,17 @@ namespace CourseSearch.Infrastructure.Migrations
                 {
                     b.Navigation("Interactions");
 
-                    b.Navigation("Rating");
-
                     b.Navigation("Roadmaps");
 
                     b.Navigation("Tags");
-
-                    b.Navigation("UserRatings");
                 });
 
             modelBuilder.Entity("CourseSearch.Domain.Entities.Platform", b =>
+                {
+                    b.Navigation("Courses");
+                });
+
+            modelBuilder.Entity("CourseSearch.Domain.Entities.Rating", b =>
                 {
                     b.Navigation("Courses");
                 });
