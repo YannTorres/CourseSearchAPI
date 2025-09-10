@@ -9,5 +9,6 @@ public class ResponseRoadmapCourseJson
     public int? DurationInMinutes { get; set; }
     public List<string>? CourseLevels { get; set; }
     public string? RatingAverage { get; set; }
+    public string? PlatformName { get; set; }
 }
 

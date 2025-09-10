@@ -20,7 +20,7 @@ public class GetByIdRoadmapUseCase : IGetByIdRoadmapUseCase
         var roadmap = await _roadmapRepository.GetById(id, loggedUser);
 
         if (roadmap == null)
-            throw new NotFoundException("Roadmap não encontrado");
+            throw new NotFoundException("Recomendação não encontrada");
 
         return new ResponseRoadmapJson()
         {
@@ -38,7 +38,8 @@ public class GetByIdRoadmapUseCase : IGetByIdRoadmapUseCase
                 DurationInMinutes = c.Course.DurationsInMinutes,
                 IsCompleted = c.IsCompleted,
                 RatingAverage = c.Course.Rating?.Average.ToString() ?? "Não Avaliado",
-                StepOrder = c.StepOrder
+                StepOrder = c.StepOrder,
+                PlatformName = c.Course.Author,
             }).ToList()
         };
     }

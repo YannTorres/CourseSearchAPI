@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text.Json;
 
 namespace CourseSearch.Infrastructure.DataAcess.Repositories;
 internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRepository, ICourseUpdateOnlyRepository
@@ -27,6 +28,12 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
         using var transaction = connection.BeginTransaction();
         try
         {
+            string? courseLevelsJson = null;
+            if (course.CourseLevels != null && course.CourseLevels.Any())
+            {
+                courseLevelsJson = JsonSerializer.Serialize(course.CourseLevels);
+            }
+
             // 1. Upsert do Course (por ExternalId)
             await connection.ExecuteAsync(@"
             MERGE INTO Courses AS target
@@ -41,10 +48,11 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
                 @Locale,
                 @Popularity,
                 @UpdatedAt,
-                @PlatformId
+                @PlatformId,
+                @CourseLevels
             )) AS source (
                 ExternalId, Title, Description, CourseUrl, Author, IconUrl, DurationsInMinutes,
-                Locale, Popularity, UpdatedAt, PlatformId
+                Locale, Popularity, UpdatedAt, PlatformId, CourseLevels 
             )
             ON target.ExternalId = source.ExternalId
             WHEN MATCHED THEN
@@ -57,14 +65,29 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
                            Locale = source.Locale,
                            Popularity = source.Popularity,
                            UpdatedAt = source.UpdatedAt,
-                           PlatformId = source.PlatformId
+                           PlatformId = source.PlatformId,
+                           CourseLevels = source.CourseLevels
             WHEN NOT MATCHED THEN
                 INSERT (Id, ExternalId, Title, Description, CourseUrl, Author, IconUrl, DurationsInMinutes,
-                        Locale, Popularity, UpdatedAt, PlatformId, Active, CreatedAt)
+                        Locale, Popularity, UpdatedAt, PlatformId, Active, CreatedAt, CourseLevels)
                 VALUES (NEWID(), source.ExternalId, source.Title, source.Description, source.CourseUrl, 
                         source.Author, source.IconUrl, source.DurationsInMinutes, source.Locale,
-                        source.Popularity, source.UpdatedAt, source.PlatformId, 1, SYSUTCDATETIME());
-        ", course, transaction);
+                        source.Popularity, source.UpdatedAt, source.PlatformId, 1, SYSUTCDATETIME(), source.CourseLevels);
+        ", new
+            {
+                course.ExternalId,
+                course.Title,
+                course.Description,
+                course.CourseUrl,
+                course.Author,
+                course.IconUrl,
+                course.DurationsInMinutes,
+                course.Locale,
+                course.Popularity,
+                course.UpdatedAt,
+                course.PlatformId,
+                CourseLevels = courseLevelsJson // Passando a string serializada
+            }, transaction);
 
             // Buscar o ID do curso (se já existia ou acabou de ser criado)
             var courseId = await connection.QuerySingleAsync<Guid>(

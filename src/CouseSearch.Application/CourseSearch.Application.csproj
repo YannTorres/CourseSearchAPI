@@ -18,4 +18,8 @@
     <ProjectReference Include="..\CourseSearch.Infrastructure\CourseSearch.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\Roadmap\Delete\" />
+  </ItemGroup>
+
 </Project>

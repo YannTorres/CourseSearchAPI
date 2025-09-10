@@ -6,6 +6,7 @@ using CourseSearch.Application.UseCases.Login;
 using CourseSearch.Application.UseCases.Roadmap.Create;
 using CourseSearch.Application.UseCases.Roadmap.GetAll;
 using CourseSearch.Application.UseCases.Roadmap.GetById;
+using CourseSearch.Application.UseCases.Roadmap.UpdateStatus;
 using CourseSearch.Application.UseCases.Users.ChangePassword;
 using CourseSearch.Application.UseCases.Users.Delete;
 using CourseSearch.Application.UseCases.Users.GetProfile;
@@ -41,6 +42,7 @@ public static class DependencyInjectionExtension
         services.AddScoped<ICreateRoadmapUseCase, CreateRoadmapUseCase>();
         services.AddScoped<IGetAllRoadmapUseCase, GetAllRoadmapUseCase>();
         services.AddScoped<IGetByIdRoadmapUseCase, GetByIdRoadmapUseCase>();
+        services.AddScoped<IUpdateRoadmapStatusUseCase, UpdateRoadmapStatusUseCase>();
 
     }
 }

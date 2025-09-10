@@ -30,6 +30,7 @@ public class GetAllRoadmapUseCase : IGetAllRoadmapUseCase
             Description = r.Description,
             StepsCount = r.StepsCount,
             CreatedAt = r.CreatedAt,
+            CompletedCourses = r.Courses.Count(c => c.IsCompleted)
         }).ToList();
 
         return new ResponseRoadmapsJson

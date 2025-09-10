@@ -8,5 +8,6 @@ public class ResponseShortRoadmapJson
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int StepsCount { get; set; }
+    public int CompletedCourses { get; set; }
     public DateTime CreatedAt { get; set; }
 }

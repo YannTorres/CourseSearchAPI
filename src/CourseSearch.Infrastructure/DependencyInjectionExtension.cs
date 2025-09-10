@@ -59,6 +59,7 @@ public static class DependencyInjectionExtension
         // Roadmap
         services.AddScoped<IRoadmapReadOnlyRepository, RoadmapRepository>();
         services.AddScoped<IRoadmapWriteOnlyRepository, RoadmapRepository>();
+        services.AddScoped<IRoadmapUpdateOnlyRepository, RoadmapRepository>();
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
