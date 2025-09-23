@@ -31,24 +31,5 @@ internal class CourseSearchDbContext : DbContext
 
         modelBuilder.Entity<UserCourseRating>()
             .HasKey(ucr => new { ucr.UserId, ucr.CourseId });
-
-        //modelBuilder.Entity<Course>()
-        //    .HasMany(c => c.Tags) 
-        //    .WithMany(t => t.Courses)
-        //    .UsingEntity<Dictionary<string, object>>(
-        //        "CoursesTags", 
-        //        j => j
-        //            .HasOne<Tag>()
-        //            .WithMany()
-        //            .HasForeignKey("TagId"), 
-        //        j => j
-        //            .HasOne<Course>()
-        //            .WithMany()
-        //            .HasForeignKey("CourseId"), 
-        //        j =>
-        //        {
-        //            j.ToTable("CoursesTags");
-        //            j.HasKey("CourseId", "TagId");
-        //        });
     }
 }

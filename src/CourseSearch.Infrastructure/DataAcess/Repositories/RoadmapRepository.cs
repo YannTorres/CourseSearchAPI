@@ -1,7 +1,6 @@
 ﻿using CourseSearch.Domain.Entities;
 using CourseSearch.Domain.Repositories.Roadmap;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace CourseSearch.Infrastructure.DataAcess.Repositories;
 internal class RoadmapRepository : IRoadmapReadOnlyRepository, IRoadmapWriteOnlyRepository, IRoadmapUpdateOnlyRepository
@@ -16,6 +15,17 @@ internal class RoadmapRepository : IRoadmapReadOnlyRepository, IRoadmapWriteOnly
         _dbContext.Attach(roadmap.Creator);
 
         await _dbContext.Roadmaps.AddAsync(roadmap);
+    }
+
+    public async Task Delete(Guid id, User user)
+    {
+        var roadmapToRemove = await _dbContext.Roadmaps
+            .FirstOrDefaultAsync(r => r.Id == id && r.Creator.Id == user.Id);
+
+        if (roadmapToRemove == null)
+            return;
+
+        _dbContext.Roadmaps.Remove(roadmapToRemove);
     }
 
     public async Task<List<Roadmap>?> GetAll(Domain.Entities.User user)

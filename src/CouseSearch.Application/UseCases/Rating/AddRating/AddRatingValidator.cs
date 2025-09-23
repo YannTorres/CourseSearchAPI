@@ -1,7 +1,7 @@
 ﻿using CourseSearch.Communication.Requests.Courses;
 using FluentValidation;
 
-namespace CourseSearch.Application.UseCases.Course.AddRating;
+namespace CourseSearch.Application.UseCases.Rating.AddRating;
 public class AddRatingValidator : AbstractValidator<RequestAddRatingJson>
 {
     public AddRatingValidator()

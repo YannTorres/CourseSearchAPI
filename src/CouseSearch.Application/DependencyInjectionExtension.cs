@@ -1,9 +1,11 @@
-﻿using CourseSearch.Application.UseCases.Course.AddRating;
-using CourseSearch.Application.UseCases.Course.GetAll;
+﻿using CourseSearch.Application.UseCases.Course.GetAll;
 using CourseSearch.Application.UseCases.Course.GetById;
 using CourseSearch.Application.UseCases.Course.Similar;
 using CourseSearch.Application.UseCases.Login;
+using CourseSearch.Application.UseCases.Rating.AddRating;
+using CourseSearch.Application.UseCases.Rating.GetRating;
 using CourseSearch.Application.UseCases.Roadmap.Create;
+using CourseSearch.Application.UseCases.Roadmap.Delete;
 using CourseSearch.Application.UseCases.Roadmap.GetAll;
 using CourseSearch.Application.UseCases.Roadmap.GetById;
 using CourseSearch.Application.UseCases.Roadmap.UpdateStatus;
@@ -36,13 +38,17 @@ public static class DependencyInjectionExtension
         services.AddScoped<IGetAllCoursesUseCase, GetAllCoursesUseCase>();
         services.AddScoped<IGetByIdCourseUseCase, GetByIdCourseUseCase>();
         services.AddScoped<IGetSimilarCoursesUseCase, GetSimilarCoursesUseCase>();
-        services.AddScoped<IAddRatingUseCase, AddRatingUseCase>();
 
         // Roadmap UseCases
         services.AddScoped<ICreateRoadmapUseCase, CreateRoadmapUseCase>();
         services.AddScoped<IGetAllRoadmapUseCase, GetAllRoadmapUseCase>();
         services.AddScoped<IGetByIdRoadmapUseCase, GetByIdRoadmapUseCase>();
         services.AddScoped<IUpdateRoadmapStatusUseCase, UpdateRoadmapStatusUseCase>();
+        services.AddScoped<IDeleteRoadmapUseCase, DeleteRoadmapUseCase>();
+
+        // Rating UseCases
+        services.AddScoped<IAddRatingUseCase, AddRatingUseCase>();
+        services.AddScoped<IGetCourseRatingUseCase, GetCourseRatingUseCase>();
 
     }
 }

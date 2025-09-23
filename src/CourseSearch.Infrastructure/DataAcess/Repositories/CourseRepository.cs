@@ -34,7 +34,6 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
                 courseLevelsJson = JsonSerializer.Serialize(course.CourseLevels);
             }
 
-            // 1. Upsert do Course (por ExternalId)
             await connection.ExecuteAsync(@"
             MERGE INTO Courses AS target
             USING (VALUES (
@@ -86,15 +85,13 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
                 course.Popularity,
                 course.UpdatedAt,
                 course.PlatformId,
-                CourseLevels = courseLevelsJson // Passando a string serializada
+                CourseLevels = courseLevelsJson
             }, transaction);
 
-            // Buscar o ID do curso (se já existia ou acabou de ser criado)
             var courseId = await connection.QuerySingleAsync<Guid>(
                 "SELECT Id FROM Courses WHERE ExternalId = @ExternalId",
                 new { course.ExternalId }, transaction);
 
-            // 3. Tags (evita duplicadas por curso)
             if (course.Tags != null && course.Tags.Any())
             {
                 foreach (var tag in course.Tags)
@@ -183,11 +180,6 @@ internal class CourseRepository : ICourseReadOnlyRepository, ICourseWriteOnlyRep
         }
 
         var searchTerms = string.Join(" ", topics);
-
-        //var coursesByTitle = await _dbcontext.Courses
-        //    .Where(c => EF.Functions.FreeText(c.Title, searchTerms))
-        //    .Include(c => c.Tags)
-        //    .ToListAsync();
 
         var coursesByTitle = await _dbcontext.Courses
             .Where(c => lowerTopics.Any(t => c.Title.ToLower().Contains(t)))

@@ -1,11 +1,8 @@
-﻿using CourseSearch.Application.UseCases.Course.AddRating;
-using CourseSearch.Application.UseCases.Course.GetAll;
+﻿using CourseSearch.Application.UseCases.Course.GetAll;
 using CourseSearch.Application.UseCases.Course.GetById;
 using CourseSearch.Application.UseCases.Course.Similar;
-using CourseSearch.Communication.Requests.Courses;
 using CourseSearch.Communication.Responses.Courses;
 using CourseSearch.Communication.Responses.Error;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseSearch.API.Controllers;
@@ -45,7 +42,7 @@ public class CourseController : ControllerBase
     }
 
     [HttpGet("{id}/similar")]
-    [ProducesResponseType(typeof(ResponseCourseJson), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseSimilarCoursesJson), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSimilarCourses(
         [FromServices] IGetSimilarCoursesUseCase useCase,
@@ -55,18 +52,5 @@ public class CourseController : ControllerBase
 
         return Ok(response);
     }
-    [HttpPut("{id}")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AddRating(
-        [FromServices] IAddRatingUseCase useCase,
-        [FromBody] RequestAddRatingJson rating,
-        [FromRoute] Guid id)
-    {
-        await useCase.Execute(id, rating);
 
-        return NoContent();
-    }
 }

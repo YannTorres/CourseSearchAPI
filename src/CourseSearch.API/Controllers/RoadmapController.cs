@@ -1,4 +1,5 @@
 ﻿using CourseSearch.Application.UseCases.Roadmap.Create;
+using CourseSearch.Application.UseCases.Roadmap.Delete;
 using CourseSearch.Application.UseCases.Roadmap.GetAll;
 using CourseSearch.Application.UseCases.Roadmap.GetById;
 using CourseSearch.Application.UseCases.Roadmap.UpdateStatus;
@@ -55,13 +56,17 @@ public class RoadmapController : ControllerBase
         return Ok(response);
     }
 
-    //public async Task<IActionResult> Delete(
-    //    [FromServices] IDeleteRoadmapUseCase useCase,
-    //    [FromRoute] Guid id)
-    //{
-    //    await useCase.Execute(id);
-    //    return NoContent();
-    //}
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Delete(
+        [FromServices] IDeleteRoadmapUseCase useCase,
+        [FromRoute] Guid id)
+    {
+        await useCase.Execute(id);
+        return NoContent();
+    }
 
     [HttpPut("{roadmapId}/course/{couseId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

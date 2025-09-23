@@ -25,6 +25,7 @@ public class EdxCourseProvider : ICourseProvider
 
         while (hasNextPage && !cancellationToken.IsCancellationRequested)
         {
+            await Task.Delay(1000, CancellationToken.None);
             var response = await _edxApiClient.GetCoursesByPageAsync(currentPage, PageSize);
 
             if (response?.Results == null || !response.Results.Any())
@@ -40,19 +41,20 @@ public class EdxCourseProvider : ICourseProvider
 
             hasNextPage = !string.IsNullOrEmpty(response.Pagination.Next);
             currentPage++;
-            await Task.Delay(1000, cancellationToken);
         }
     }
 
     private Course MapEdxDtoToDomain(EdxCourseDto dto)
     {
+        var courseYear = dto.CourseId.Substring(dto.CourseId.Length - 4, 4);
+
         return new Course
         {
             Id = Guid.NewGuid(),
             ExternalId = dto.CourseId,
-            Title = dto.Name ?? "Título indisponível",
-            Description = "Não Informada",
-            Author = dto.Org,
+            Title = dto.Name + " (" + courseYear + ")" ?? "Título indisponível",
+            Description = !string.IsNullOrEmpty(dto.Description) ? dto.Description : "Não Informada",
+            Author = "edX",
             CourseUrl = $"https://courses.edx.org/courses/{dto.CourseId}/about",
             UpdatedAt = DateTime.UtcNow,
             PlatformId = PlataformId,

@@ -45,20 +45,16 @@ public class GetSimilarCoursesUseCase : IGetSimilarCoursesUseCase
                                .Select(s => s.Item1)
                                .ToList();
 
-        List<ResponseShortCourseJson> shortCourses = [];
+        List<ResponseShortSimilarCourseJson> shortCourses = [];
 
         foreach (var curso in recommendedCourses)
         {
-            var course = new ResponseShortCourseJson
+            var course = new ResponseShortSimilarCourseJson
             {
                 Id = curso.Id,
                 Title = curso.Title,
-                Description = curso.Description,
-                CourseLevels = curso?.CourseLevels?.Select(cl => cl.CourseLevelToString()).ToList() ?? ["Nível Não Especificado"],
-                Platform = curso!.Platform.Name,
-                RatingAverage = curso.Rating?.Average.ToString(),
-                RatingCount = curso.Rating?.Count.ToString(),
-                Tags = curso.Tags.Select(t => t.Name).ToList()
+                RatingAverage = curso?.Rating?.Average.ToString("F1") ?? "N/A",
+                RatingCount = (curso?.Rating?.Count ?? 0).ToAvaliacoesString()
             };
 
             shortCourses.Add(course);

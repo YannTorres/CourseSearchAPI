@@ -14,7 +14,7 @@ public class GeminiModelService : IAIModelService
     private readonly IConfiguration _configuration;
     private readonly string _apiKey;
     private const string GeminiModel = "gemini-2.5-flash-lite";
-    private const string GeminiModelRoadmap = "gemini-2.5-flash";
+    private const string GeminiModelRoadmap = "gemini-2.5-pro";
     public GeminiModelService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
@@ -84,7 +84,7 @@ public class GeminiModelService : IAIModelService
               "Description": "Descrição do curso que está disponível no meu banco de dados. se estiver vazio crie uma descrição curta",
               "Order": número inteiro indicando a ordem do curso na trilha de aprendizado, começando em 1 para o primeiro curso.
         """;
-        await Task.Delay(TimeSpan.FromSeconds(5));
+
         var responseText = await GenerateContentAsync(prompt, GeminiModelRoadmap);
         if (string.IsNullOrEmpty(responseText))
         {

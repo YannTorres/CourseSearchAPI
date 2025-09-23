@@ -45,9 +45,7 @@ public class CourseSyncWorker : BackgroundService
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                 var aiModelService = scope.ServiceProvider.GetRequiredService<IAIModelService>();
 
-                IEnumerable<ICourseProvider> provideres = providers.Skip(3);
-
-                foreach (var provider in provideres)
+                foreach (var provider in providers)
                 {
                     _logger.LogInformation("Worker: Buscando cursos da plataforma: {PlatformName}", provider.PlatformName);
 
@@ -60,6 +58,9 @@ public class CourseSyncWorker : BackgroundService
                             bool isTechMatch = _techRegex.IsMatch(course.Title);
                             bool isExcluded = _filterSettings.ExclusionKeywords.Any(k => course.Title.Contains(k, StringComparison.OrdinalIgnoreCase));
 
+                            if (course.ExternalId.StartsWith("ccx"))
+                                isTechMatch = false;
+
                             shouldSync = isTechMatch && !isExcluded;
                         }
 
@@ -67,7 +68,7 @@ public class CourseSyncWorker : BackgroundService
                         {
                             var existingCourse = await readOnlyRepository.GetByExternalIdAsync(course.ExternalId);
 
-                            if (existingCourse != null && existingCourse.Tags.Count == 0)
+                            if (existingCourse == null || existingCourse.Tags.Count == 0)
                             {
 
                                 var generatedTags = await aiModelService.GenerateTagsForCourseAsync(course.Id, course.Title, course.Description);

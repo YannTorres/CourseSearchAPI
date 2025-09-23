@@ -12,7 +12,6 @@ public class Course : EntityBase
     public int? DurationsInMinutes { get; set; }
     public string? Locale { get; set; }
     public List<CourseLevel>? CourseLevels { get; set; }
-    public List<string>? Units { get; set; }
     public float? Popularity { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int? PlatformId { get; set; }

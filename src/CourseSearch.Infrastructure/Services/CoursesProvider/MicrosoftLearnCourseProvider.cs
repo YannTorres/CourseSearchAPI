@@ -69,7 +69,6 @@ public class MicrosoftLearnCourseProvider : ICourseProvider
             DurationsInMinutes = dto.Duration,
             Locale = dto.Locale,
             CourseLevels = MapLevelsFromDto(dto.Levels),
-            Units = dto.Units?.ToList() ?? [],
             Popularity = dto.Popularity,
             UpdatedAt = dto.LastDateModified,
             PlatformId = PlataformId,

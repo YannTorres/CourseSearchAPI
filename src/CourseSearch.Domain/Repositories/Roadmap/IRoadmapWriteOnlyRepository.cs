@@ -2,4 +2,5 @@
 public interface IRoadmapWriteOnlyRepository
 {
     Task Add(Entities.Roadmap roadmap);
+    Task Delete(Guid id, Entities.User user);
 }

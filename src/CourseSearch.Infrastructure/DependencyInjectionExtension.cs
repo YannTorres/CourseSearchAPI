@@ -1,5 +1,6 @@
 ﻿using CourseSearch.Domain.Repositories;
 using CourseSearch.Domain.Repositories.Course;
+using CourseSearch.Domain.Repositories.Rating;
 using CourseSearch.Domain.Repositories.Roadmap;
 using CourseSearch.Domain.Repositories.User;
 using CourseSearch.Domain.Security.Cryptography;
@@ -60,6 +61,9 @@ public static class DependencyInjectionExtension
         services.AddScoped<IRoadmapReadOnlyRepository, RoadmapRepository>();
         services.AddScoped<IRoadmapWriteOnlyRepository, RoadmapRepository>();
         services.AddScoped<IRoadmapUpdateOnlyRepository, RoadmapRepository>();
+
+        // Rating
+        services.AddScoped<IRatingReadOnlyRepository, RatingRepository>();
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();

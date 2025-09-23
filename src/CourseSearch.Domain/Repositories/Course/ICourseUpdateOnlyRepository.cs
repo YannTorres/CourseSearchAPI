@@ -5,6 +5,6 @@ public interface ICourseUpdateOnlyRepository
 {
     void Update(Entities.Course course);
     Task<Entities.Course?> GetById(Guid id);
-    void UpdateRating(Rating course);
+    void UpdateRating(Entities.Rating course);
     void UpdateUserRating(UserCourseRating courseRating);
 }

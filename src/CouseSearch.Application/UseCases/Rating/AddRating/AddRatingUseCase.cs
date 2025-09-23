@@ -5,7 +5,7 @@ using CourseSearch.Domain.Repositories.Course;
 using CourseSearch.Domain.Services.LoggedUser;
 using CourseSearch.Exception.ExceptionBase;
 
-namespace CourseSearch.Application.UseCases.Course.AddRating;
+namespace CourseSearch.Application.UseCases.Rating.AddRating;
 public class AddRatingUseCase : IAddRatingUseCase
 {
     private readonly ICourseReadOnlyRepository _courseReadOnlyRepository;
@@ -41,7 +41,7 @@ public class AddRatingUseCase : IAddRatingUseCase
 
         if (course.Rating == null)
         {
-            course.Rating = new Rating
+            course.Rating = new Domain.Entities.Rating
             {
                 CourseId = course.Id,
                 Count = 0,
@@ -62,7 +62,8 @@ public class AddRatingUseCase : IAddRatingUseCase
             {
                 UserId = loggedUser.Id,
                 CourseId = course.Id,
-                Score = rating.Rating
+                Score = rating.Rating,
+                Review = rating.Review,
             };
 
             await _courseWriteOnlyRepository.AddUserRating(newUserRating);
@@ -71,6 +72,7 @@ public class AddRatingUseCase : IAddRatingUseCase
         {
             oldScore = userRating.Score;
             userRating.Score = rating.Rating;
+            userRating.Review = rating.Review;
 
             _courseUpdateOnlyRepository.UpdateUserRating(userRating);
         }
@@ -93,7 +95,7 @@ public class AddRatingUseCase : IAddRatingUseCase
         }
     }
 
-    private void UpdateAggregatedRating(Rating rating, int oldScore, int newScore)
+    private void UpdateAggregatedRating(Domain.Entities.Rating rating, int oldScore, int newScore)
     {
         float totalScore = rating.Average * rating.Count;
 
