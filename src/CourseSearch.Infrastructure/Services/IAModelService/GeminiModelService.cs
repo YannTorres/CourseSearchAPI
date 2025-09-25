@@ -19,8 +19,8 @@ public class GeminiModelService : IAIModelService
     {
         _httpClient = httpClient;
         _configuration = configuration;
-        _apiKey = _configuration["Gemini:ApiKey"]
-            ?? throw new ArgumentNullException(nameof(configuration), "A chave da API do Gemini não foi encontrada. Configure-a via User Secrets.");
+        _apiKey = _configuration.GetValue<string>("GeminiApiKey")
+            ?? throw new ArgumentNullException(nameof(configuration), "A chave da API do Gemini não foi encontrada. Configure-a via appsettings.");
     }
     public async Task<List<string>> ExtractTopicsFromObjectiveAsync(RequestGenerateRoadpmapJson request)
     {
